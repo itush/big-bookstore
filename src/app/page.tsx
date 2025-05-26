@@ -1,103 +1,74 @@
-import Image from "next/image";
+// src/app/page.tsx
+
+// Purpose: The main page of our application. For this step, it serves as a simple test
+// to verify Apollo Client's connection to the GraphQL server by fetching and displaying books.
+// This page is a Server Component by default, but we will render a Client Component inside it.
+
+// Import necessary modules for a Client Component.
+'use client'; // Mark this file as a Client Component, as it uses React hooks.
+
+import { gql, useQuery } from '@apollo/client';
+
+// Define the GraphQL query to fetch books.
+// We're requesting the 'id', 'title', and the nested 'author's 'name'.
+const GET_BOOKS_TEST_QUERY = gql`
+  query GetBooksTest {
+    books {
+      id
+      title
+      author {
+        name
+      }
+    }
+  }
+`;
+
+// Define an interface for the Book type, matching our GraphQL schema.
+interface Book {
+  id: string;
+  title: string;
+  author: {
+    name: string;
+  } | null; // Author can be null as per our schema
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // Use the useQuery hook from Apollo Client to execute the GraphQL query.
+  // It returns `loading`, `error`, and `data` states.
+  const { loading, error, data } = useQuery<{ books: Book[] }>(GET_BOOKS_TEST_QUERY);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  // Render different states based on the query status.
+  if (loading) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100">
+        <p className="text-gray-700 text-lg">Loading books...</p>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100">
+        <p className="text-red-500 text-lg">Error loading books: {error.message}</p>
+      </main>
+    );
+  }
+
+  // If data is successfully loaded, display it.
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100">
+      <h1 className="text-4xl font-bold text-gray-800 mb-8">Books from GraphQL API</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Available Books:</h2>
+        <ul className="list-disc pl-5 space-y-2">
+          {data?.books.map((book) => (
+            <li key={book.id} className="text-gray-600">
+              <span className="font-medium">{book.title}</span> by{' '}
+              <span className="italic">{book.author ? book.author.name : 'Unknown Author'}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </main>
   );
 }
