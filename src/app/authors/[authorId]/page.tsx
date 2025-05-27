@@ -7,22 +7,18 @@
 import { AuthorDetails } from '@/components/authors/AuthorDetails'; // Import the AuthorDetails component
 
 // Define types for the page's props, specifically for the dynamic params.
-interface AuthorDetailPageProps {
-  params: {
-    authorId: string; // The dynamic segment from the URL (e.g., /authors/1 -> authorId = "1")
-  };
-}
+
 
 export const metadata = {
   title: 'Author Details | Big Bookstore',
   description: 'View details and books by a specific author.',
 };
 
-export default async function AuthorDetailPage({ params }: AuthorDetailPageProps) {
+export default async function AuthorDetailPage({ params }: { params: Promise<{ authorId: string }> }) {
  // Await the params object before destructuring its properties.
   // This addresses the Next.js warning.
-  const resolvedParams = await params;
-  const { authorId } = resolvedParams;
+  
+  const { authorId } = await params;
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
