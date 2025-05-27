@@ -8,6 +8,9 @@ import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateNextHandler } from '@as-integrations/next'; // The integration library
 import { typeDefs } from '@/graphql/schema';
 import { resolvers } from '@/graphql/resolvers';
+import dbConnect from '@/lib/mongoose';
+
+
 
 // Create an instance of ApolloServer.
 // It takes our schema (typeDefs) and resolver functions as configuration.
@@ -27,6 +30,7 @@ const handler = startServerAndCreateNextHandler(server, {
   context: async () => {
     // For now, our context is empty. Later, this is where user authentication details
     // or database client instances would be added, making them accessible to all resolvers.
+    await dbConnect();
     return {};
   },
 });
