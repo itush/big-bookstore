@@ -6,10 +6,13 @@
 
 import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateNextHandler } from '@as-integrations/next'; // The integration library
+
 import { typeDefs } from '@/graphql/schema';
 import { resolvers } from '@/graphql/resolvers';
 import dbConnect from '@/lib/mongoose';
 
+// Define the type for the expected context object for static App Router API routes.
+// For routes without dynamic parameters, `params` is an empty object.
 
 
 // Create an instance of ApolloServer.
@@ -26,7 +29,7 @@ const server = new ApolloServer({
 // This function bridges Apollo Server's request/response handling with Next.js's API route structure.
 // The `context` function here is executed for every request and can be used to pass
 // request-specific data (like authentication tokens or database connections) to resolvers.
-const handler = startServerAndCreateNextHandler(server, {
+const apolloServerHandler = startServerAndCreateNextHandler(server, {
   context: async () => {
     // For now, our context is empty. Later, this is where user authentication details
     // or database client instances would be added, making them accessible to all resolvers.
@@ -37,7 +40,21 @@ const handler = startServerAndCreateNextHandler(server, {
 
 // Export the handler for both GET and POST requests.
 // GraphQL operations are typically sent via POST, but GET is used by the Apollo Sandbox.
-export { handler as GET, handler as POST };
+// export { handler as GET, handler as POST };
+
+
+// Explicitly define GET and POST functions that match Next.js App Router's expected signature.
+// We provide a default for 'context' to satisfy TypeScript if it might be undefined for static routes,
+// but the main point is the signature matches.
+export async function GET(request: Request) {
+  // Pass the NextRequest object to the Apollo handler.
+  // The Apollo handler will process it and return a Next.js Response.
+  return apolloServerHandler(request);
+}
+
+export async function POST(request: Request) {
+  return apolloServerHandler(request);
+}
 
 // Optional: Configure route segment to not use cache, which is good for APIs.
 // This ensures that your API responses are always fresh and not cached by Next.js or Vercel's CDN.
