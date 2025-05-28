@@ -7,10 +7,11 @@
 
 'use client'; // This directive marks the component as a Client Component.
 
+import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import Link from 'next/link'; // To link to author detail pages
 import { GET_BOOKS_WITH_AUTHORS, DELETE_BOOK_MUTATION } from '@/graphql/operations';
-
+import { EditBookForm } from '@/components/forms/EditBookForm';
 
 // Define interfaces for type safety, matching our GraphQL schema.
 interface Book {
@@ -27,8 +28,9 @@ interface Book {
 export function BookList() {
   // useQuery hook sends the query and manages loading and error states.
   const { loading, error, data } = useQuery<{ books: Book[] }>(GET_BOOKS_WITH_AUTHORS);
+  const [editingBookId, setEditingBookId] = useState<string | null>(null);
 
-// Setup delete mutation
+  // Setup delete mutation
   const [deleteBook, { loading: deleting, error: deleteError }] = useMutation(DELETE_BOOK_MUTATION, {
     refetchQueries: [
       { query: GET_BOOKS_WITH_AUTHORS } // Re-fetch books list
@@ -90,7 +92,14 @@ export function BookList() {
               </p>
             )}
             <div className="flex space-x-2">
-              {/* <button className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-1 px-3 rounded-md">Edit</button> */}
+
+              <button
+                onClick={() => setEditingBookId(book.id)} // Set the ID to show the edit form
+                className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-1 px-3 rounded-md"
+              >
+                Edit
+              </button>
+
               <button
                 onClick={() => handleDeleteBook(book.id, book.title)}
                 className="bg-red-300 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md disabled:opacity-50 cursor-pointer"
@@ -102,7 +111,13 @@ export function BookList() {
           </li>
         ))}
       </ul>
-       {deleteError && <p className="text-red-500 text-sm mt-2">Delete Error: {deleteError.message}</p>}
+      {deleteError && <p className="text-red-500 text-sm mt-2">Delete Error: {deleteError.message}</p>}
+      {editingBookId && (
+        <EditBookForm
+          bookId={editingBookId}
+          onClose={() => setEditingBookId(null)} // Function to close the form
+        />
+      )}
     </div>
   );
 }

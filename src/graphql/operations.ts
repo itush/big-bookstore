@@ -49,6 +49,21 @@ export const GET_AUTHOR_DETAILS_BY_ID = gql`
   }
 `;
 
+export const GET_BOOK_DETAILS_BY_ID = gql`
+  query GetBookDetailsById($bookId: ObjectID!) { # Use ObjectID!
+    book(id: $bookId) {
+      id
+      title
+      synopsis
+      author {
+        id
+        name
+        bio
+      }
+    }
+  }
+`;
+
 // --- MUTATIONS ---
 
 export const ADD_AUTHOR_MUTATION = gql`
@@ -85,6 +100,11 @@ export const UPDATE_AUTHOR_MUTATION = gql`
       id
       name
       bio # NEW: Return updated bio
+      books {
+        id
+        title
+        synopsis
+      }
     }
   }
 `;
@@ -104,6 +124,7 @@ export const UPDATE_BOOK_MUTATION = gql`
       author {
         id
         name
+        bio
       }
     }
   }

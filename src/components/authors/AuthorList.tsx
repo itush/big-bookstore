@@ -7,9 +7,11 @@
 
 'use client'; // This directive marks the component as a Client Component.
 
+import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import Link from 'next/link';
 import { GET_AUTHORS_WITH_BOOKS, GET_BOOKS_WITH_AUTHORS, DELETE_AUTHOR_MUTATION } from '@/graphql/operations';
+import { EditAuthorForm } from '@/components/forms/EditAuthorForm';
 
 // Define an interface for the Author type, matching our GraphQL schema.
 interface Author {
@@ -28,7 +30,7 @@ export function AuthorList() {
   // const { loading, error, data } = useQuery<{ authors: Author[] }>(GET_AUTHORS_QUERY);
 
   const { loading, error, data, } = useQuery<{ authors: Author[] }>(GET_AUTHORS_WITH_BOOKS); // Add refetch for later use
-
+  const [editingAuthorId, setEditingAuthorId] = useState<string | null>(null);
   // Setup delete mutation
   const [deleteAuthor, { loading: deleting, error: deleteError }] = useMutation(DELETE_AUTHOR_MUTATION, {
     // Option 1: Refetch all relevant queries after mutation. Simple but can be inefficient for large datasets.
@@ -89,7 +91,14 @@ export function AuthorList() {
                 {author.name}
               </Link>
               <div className="flex space-x-2">
-                {/* <button className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-1 px-3 rounded-md">Edit</button> */}
+                
+                <button
+                  onClick={() => setEditingAuthorId(author.id)} // Set the ID to show the edit form
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-1 px-3 rounded-md"
+                >
+                  Edit
+                </button>
+
                 <button
                   onClick={() => handleDeleteAuthor(author.id, author.name)}
                   className="bg-red-300 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md disabled:opacity-50 cursor-pointer"
@@ -103,6 +112,13 @@ export function AuthorList() {
         </ul>
       )}
       {deleteError && <p className="text-red-500 text-sm mt-2">Delete Error: {deleteError.message}</p>}
+
+      {editingAuthorId && (
+        <EditAuthorForm
+          authorId={editingAuthorId}
+          onClose={() => setEditingAuthorId(null)} // Function to close the form
+        />
+      )}
     </div>
   );
 }
