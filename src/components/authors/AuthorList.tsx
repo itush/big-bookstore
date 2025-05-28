@@ -7,9 +7,9 @@
 
 'use client'; // This directive marks the component as a Client Component.
 
-import { useQuery } from '@apollo/client';
-import Link from 'next/link'; 
-import { GET_AUTHORS_WITH_BOOKS } from '@/graphql/operations';
+import { useQuery, useMutation } from '@apollo/client';
+import Link from 'next/link';
+import { GET_AUTHORS_WITH_BOOKS, GET_BOOKS_WITH_AUTHORS, DELETE_AUTHOR_MUTATION } from '@/graphql/operations';
 
 // Define an interface for the Author type, matching our GraphQL schema.
 interface Author {
@@ -27,7 +27,48 @@ export function AuthorList() {
   // useQuery hook sends the query and manages loading and error states.
   // const { loading, error, data } = useQuery<{ authors: Author[] }>(GET_AUTHORS_QUERY);
 
-  const { loading, error, data,  } = useQuery<{ authors: Author[] }>(GET_AUTHORS_WITH_BOOKS); // Add refetch for later use
+  const { loading, error, data, } = useQuery<{ authors: Author[] }>(GET_AUTHORS_WITH_BOOKS); // Add refetch for later use
+
+  // Setup delete mutation
+  const [deleteAuthor, { loading: deleting, error: deleteError }] = useMutation(DELETE_AUTHOR_MUTATION, {
+    // Option 1: Refetch all relevant queries after mutation. Simple but can be inefficient for large datasets.
+    refetchQueries: [
+      { query: GET_AUTHORS_WITH_BOOKS }, // Re-fetch authors list
+      { query: GET_BOOKS_WITH_AUTHORS }  // Re-fetch books list, as author deletion might affect books
+    ],
+
+    // Option 2 (More advanced & efficient): Update the cache directly.
+    // update(cache, { data: { deleteAuthor } }) {
+    //   // Read the current data for authors
+    //   const existingAuthors: { authors: Author[] } | null = cache.readQuery({
+    //     query: GET_AUTHORS_WITH_BOOKS,
+    //   });
+    //   if (existingAuthors && deleteAuthor) {
+    //     // Filter out the deleted author
+    //     const newAuthors = existingAuthors.authors.filter(author => author.id !== deleteAuthor);
+    //     cache.writeQuery({
+    //       query: GET_AUTHORS_WITH_BOOKS,
+    //       data: { authors: newAuthors },
+    //     });
+    //     // Optionally, also remove associated books from cache if you want full consistency without refetching
+    //     // This gets complex, refetchQueries is often sufficient for initial setup
+    //   }
+    // }
+
+  });
+
+  const handleDeleteAuthor = async (authorId: string, authorName: string) => {
+    if (!confirm(`Are you sure you want to delete the author "${authorName}" and all their associated books?`)) {
+      return;
+    }
+    try {
+      await deleteAuthor({ variables: { id: authorId } });
+      console.log(`Author "${authorName}" deleted successfully.`);
+      // refetchQueries will handle UI update
+    } catch (err) {
+      console.error('Error deleting author:', err);
+    }
+  };
 
   // Purpose: Manages loading and error states for the UI.
   if (loading) return <p className="text-center py-4 text-gray-700">Loading authors...</p>;
@@ -47,10 +88,21 @@ export function AuthorList() {
               <Link href={`/authors/${author.id}`} className="font-semibold text-blue-600 hover:underline text-lg">
                 {author.name}
               </Link>
+              <div className="flex space-x-2">
+                {/* <button className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-1 px-3 rounded-md">Edit</button> */}
+                <button
+                  onClick={() => handleDeleteAuthor(author.id, author.name)}
+                  className="bg-red-300 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md disabled:opacity-50 cursor-pointer"
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
       )}
+      {deleteError && <p className="text-red-500 text-sm mt-2">Delete Error: {deleteError.message}</p>}
     </div>
   );
 }

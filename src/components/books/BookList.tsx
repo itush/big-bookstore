@@ -7,9 +7,9 @@
 
 'use client'; // This directive marks the component as a Client Component.
 
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import Link from 'next/link'; // To link to author detail pages
-import { GET_BOOKS_WITH_AUTHORS } from '@/graphql/operations';
+import { GET_BOOKS_WITH_AUTHORS, DELETE_BOOK_MUTATION } from '@/graphql/operations';
 
 
 // Define interfaces for type safety, matching our GraphQL schema.
@@ -27,6 +27,42 @@ interface Book {
 export function BookList() {
   // useQuery hook sends the query and manages loading and error states.
   const { loading, error, data } = useQuery<{ books: Book[] }>(GET_BOOKS_WITH_AUTHORS);
+
+// Setup delete mutation
+  const [deleteBook, { loading: deleting, error: deleteError }] = useMutation(DELETE_BOOK_MUTATION, {
+    refetchQueries: [
+      { query: GET_BOOKS_WITH_AUTHORS } // Re-fetch books list
+    ],
+
+    // Option 2 (More advanced & efficient): Update the cache directly.
+    // update(cache, { data: { deleteBook } }) {
+    //   const existingBooks: { books: Book[] } | null = cache.readQuery({
+    //     query: GET_BOOKS_WITH_AUTHORS,
+    //   });
+    //   if (existingBooks && deleteBook) {
+    //     const newBooks = existingBooks.books.filter(book => book.id !== deleteBook);
+    //     cache.writeQuery({
+    //       query: GET_BOOKS_WITH_AUTHORS,
+    //       data: { books: newBooks },
+    //     });
+    //   }
+    // }
+
+
+  });
+
+  const handleDeleteBook = async (bookId: string, bookTitle: string) => {
+    if (!confirm(`Are you sure you want to delete the book "${bookTitle}"?`)) {
+      return;
+    }
+    try {
+      await deleteBook({ variables: { id: bookId } });
+      console.log(`Book "${bookTitle}" deleted successfully.`);
+      // refetchQueries will handle UI update
+    } catch (err) {
+      console.error('Error deleting book:', err);
+    }
+  };
 
   // Purpose: Manages loading and error states for the UI.
   if (loading) return <p className="text-center py-4 text-gray-700">Loading books...</p>;
@@ -53,9 +89,20 @@ export function BookList() {
                 <strong className="font-medium">Synopsis:</strong> {book.synopsis}
               </p>
             )}
+            <div className="flex space-x-2">
+              {/* <button className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-1 px-3 rounded-md">Edit</button> */}
+              <button
+                onClick={() => handleDeleteBook(book.id, book.title)}
+                className="bg-red-300 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md disabled:opacity-50 cursor-pointer"
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </li>
         ))}
       </ul>
+       {deleteError && <p className="text-red-500 text-sm mt-2">Delete Error: {deleteError.message}</p>}
     </div>
   );
 }
