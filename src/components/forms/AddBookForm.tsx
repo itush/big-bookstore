@@ -7,38 +7,24 @@
 
 'use client';
 
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { useState } from 'react';
-import { GET_BOOKS_QUERY } from '../books/BookList'; // Import the book query for refetching
-import { GET_AUTHORS_QUERY } from '../authors/AuthorList'; // Import the author query for refetching
+import { GET_BOOKS_WITH_AUTHORS, GET_AUTHORS_WITH_BOOKS, ADD_BOOK_MUTATION } from '@/graphql/operations';
 
-// Define the GraphQL mutation.
-// We are asking to add a book with a title and authorName,
-// and we want to get back the new book's id, title, and author's name.
-const ADD_BOOK_MUTATION = gql`
-  mutation AddBook($title: String!, $authorName: String!) {
-    addBook(title: $title, authorName: $authorName) {
-      id
-      title
-      author {
-        id
-        name
-      }
-    }
-  }
-`;
+
 
 export function AddBookForm() {
   const [title, setTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
+  const [synopsis, setSynopsis] = useState('');
 
   // useMutation hook. 'refetchQueries' tells Apollo to re-run specific queries
   // after the mutation. This ensures the BookList and AuthorList (if a new author
   // was created implicitly) are up-to-date with the new data.
   const [addBook, { loading, error }] = useMutation(ADD_BOOK_MUTATION, {
     refetchQueries: [
-      { query: GET_BOOKS_QUERY },      // Re-fetch all books to update the list
-      { query: GET_AUTHORS_QUERY },    // Re-fetch all authors in case a new one was implicitly created
+      { query: GET_BOOKS_WITH_AUTHORS },      // Re-fetch all books to update the list
+      { query: GET_AUTHORS_WITH_BOOKS },    // Re-fetch all authors in case a new one was implicitly created
     ],
   });
 
@@ -49,10 +35,11 @@ export function AddBookForm() {
 
     try {
       await addBook({
-        variables: { title, authorName }, // Pass form values as variables
+        variables: { input: { title, authorName, synopsis } }, // Pass form values as variables
       });
       setTitle(''); // Clear form fields on success
       setAuthorName('');
+      setSynopsis('');
       console.log('Book added successfully!'); // For debugging
     } catch (err) {
       console.error('Error adding book:', err);
@@ -90,6 +77,19 @@ export function AddBookForm() {
             disabled={loading}
             required
           />
+        </div>
+        <div>
+          <label htmlFor="synopsis" className="block text-gray-700 text-sm font-bold mb-2">
+            Book Synopsis (Optional):
+          </label>
+          <textarea
+            id="synopsis"
+            value={synopsis}
+            onChange={(e) => setSynopsis(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            rows={6} // Multi-line input
+            disabled={loading}
+          ></textarea>
         </div>
         <button
           type="submit"

@@ -13,6 +13,7 @@ import { IBook } from './Book';
 export interface IAuthor extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
+  bio?: string;
   books?: IBook[];
   // Mongoose automatically adds _id: mongoose.Types.ObjectId
   // Mongoose automatically adds createdAt and updatedAt if timestamps: true
@@ -27,6 +28,7 @@ const AuthorSchema: Schema = new Schema({
     trim: true,
     minlength: [2, 'Author name must be at least 2 characters long.'],
   },
+  bio: { type: String, required: false },
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields automatically
 });

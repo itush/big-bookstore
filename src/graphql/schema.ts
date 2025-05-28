@@ -7,34 +7,68 @@
 import gql from 'graphql-tag';
 
 export const typeDefs = gql`
-  # Defines the Book type with its fields.
-  type Book {
-    id: ID!         # Unique identifier for the book. ID is a special scalar type.
-    title: String!  # The title of the book. String! means it's a non-nullable string.
-    author: Author  # The author of the book. This is a nested relationship!
-                    # It's an Author type, meaning we can query fields of the Author.
-                    # Note: It's not 'Author!' because an author might not be found (e.g., if authorId is invalid).
-  }
+  # Scalar type for unique identifiers
+  scalar ObjectID
 
-  # Defines the Author type with its fields.
+  # Author Type
   type Author {
-    id: ID!         # Unique identifier for the author.
-    name: String!   # The name of the author.
-    books: [Book!]  # A list of books written by this author. [Book!] means a list of non-nullable Books.
-                    # This is another nested relationship.
+    id: ObjectID!
+    name: String!
+    bio: String # NEW: Add bio field
+    books: [Book]
   }
 
-  # The Query type defines all the entry points for reading data from our API.
+  # Book Type
+  type Book {
+    id: ObjectID!
+    title: String!
+    synopsis: String # NEW: Add synopsis field
+    author: Author! # The author who wrote the book
+  }
+
+  # Input type for adding a new Author
+  input AddAuthorInput {
+    name: String!
+    bio: String # NEW: Add bio field as optional during creation
+  }
+
+  # Input type for updating an Author
+  input UpdateAuthorInput {
+    name: String # Name is optional for partial updates
+    bio: String # NEW: Add bio for updates
+  }
+
+  # Input type for adding a new Book
+  input AddBookInput {
+    title: String!
+    synopsis: String # NEW: Add synopsis field as optional during creation
+    authorName: String!
+  }
+
+  # Input type for updating a Book
+  input UpdateBookInput {
+    title: String # Optional for partial updates
+    synopsis: String # NEW: Add synopsis for updates
+    authorName: String # Optional for partial updates, will link to existing author or create new
+  }
+
+  # Root Query Type
   type Query {
-    books: [Book!]!       # A query to get a list of all books. Returns a non-nullable list of non-nullable Books.
-    book(id: ID!): Book   # A query to get a single book by its ID. Requires a non-nullable ID argument.
-    authors: [Author!]!   # A query to get a list of all authors.
-    author(id: ID!): Author # A query to get a single author by their ID. Requires a non-nullable ID argument.
+    books: [Book]
+    book(id: ObjectID!): Book
+    authors: [Author]
+    author(id: ObjectID!): Author
   }
 
-  # The Mutation type defines all the entry points for writing/modifying data.
+  # Root Mutation Type
   type Mutation {
-    addBook(title: String!, authorName: String!): Book! # Adds a new book. Requires title and authorName. Returns the newly created Book.
-    addAuthor(name: String!): Author! # Adds a new author. Requires name. Returns the newly created Author.
+    addAuthor(input: AddAuthorInput!): Author
+    addBook(input: AddBookInput!): Book
+
+    updateAuthor(id: ObjectID!, input: UpdateAuthorInput!): Author
+    deleteAuthor(id: ObjectID!): Boolean
+
+    updateBook(id: ObjectID!, input: UpdateBookInput!): Book
+    deleteBook(id: ObjectID!): Boolean
   }
 `;

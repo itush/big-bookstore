@@ -7,29 +7,27 @@
 
 'use client'; // This directive marks the component as a Client Component.
 
-import { gql, useQuery } from '@apollo/client';
-import Link from 'next/link'; // To link to author detail pages
-
-// Define the GraphQL query to get all authors.
-// For now, we'll only fetch ID and name. We'll fetch nested books on the detail page.
-export const GET_AUTHORS_QUERY = gql`
-  query GetAuthors {
-    authors {
-      id
-      name
-    }
-  }
-`;
+import { useQuery } from '@apollo/client';
+import Link from 'next/link'; 
+import { GET_AUTHORS_WITH_BOOKS } from '@/graphql/operations';
 
 // Define an interface for the Author type, matching our GraphQL schema.
 interface Author {
   id: string;
   name: string;
+  bio?: string; // Add bio
+  books?: { // Add books
+    id: string;
+    title: string;
+    synopsis?: string; // Add synopsis
+  }[];
 }
 
 export function AuthorList() {
   // useQuery hook sends the query and manages loading and error states.
-  const { loading, error, data } = useQuery<{ authors: Author[] }>(GET_AUTHORS_QUERY);
+  // const { loading, error, data } = useQuery<{ authors: Author[] }>(GET_AUTHORS_QUERY);
+
+  const { loading, error, data,  } = useQuery<{ authors: Author[] }>(GET_AUTHORS_WITH_BOOKS); // Add refetch for later use
 
   // Purpose: Manages loading and error states for the UI.
   if (loading) return <p className="text-center py-4 text-gray-700">Loading authors...</p>;

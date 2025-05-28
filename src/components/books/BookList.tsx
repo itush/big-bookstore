@@ -7,38 +7,26 @@
 
 'use client'; // This directive marks the component as a Client Component.
 
-import { gql, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import Link from 'next/link'; // To link to author detail pages
+import { GET_BOOKS_WITH_AUTHORS } from '@/graphql/operations';
 
-// Define the GraphQL query using gql tag.
-// We are asking for all books, and for each book, its ID, title, and its author's name and ID.
-// This directly demonstrates the nested query capability!
-export const GET_BOOKS_QUERY = gql`
-  query GetBooks {
-    books {
-      id
-      title
-      author { # Nested field!
-        id
-        name
-      }
-    }
-  }
-`;
 
 // Define interfaces for type safety, matching our GraphQL schema.
 interface Book {
   id: string;
   title: string;
+  synopsis?: string; // Add synopsis
   author: {
     id: string;
     name: string;
-  } | null; // Author can be null if not found
+    bio?: string; // Add bio
+  } | null;// Author can be null if not found
 }
 
 export function BookList() {
   // useQuery hook sends the query and manages loading and error states.
-  const { loading, error, data } = useQuery<{ books: Book[] }>(GET_BOOKS_QUERY);
+  const { loading, error, data } = useQuery<{ books: Book[] }>(GET_BOOKS_WITH_AUTHORS);
 
   // Purpose: Manages loading and error states for the UI.
   if (loading) return <p className="text-center py-4 text-gray-700">Loading books...</p>;
@@ -59,6 +47,11 @@ export function BookList() {
               </Link>
             ) : (
               <span className="italic text-gray-600">Unknown Author</span>
+            )}
+            {book.synopsis && (
+              <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                <strong className="font-medium">Synopsis:</strong> {book.synopsis}
+              </p>
             )}
           </li>
         ))}

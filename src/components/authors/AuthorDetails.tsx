@@ -6,33 +6,24 @@
 
 'use client';
 
-import { gql, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import Link from 'next/link';
+import { GET_AUTHOR_DETAILS_BY_ID } from '@/graphql/operations'; 
 
-// Define the GraphQL query to get a single author by ID, along with their nested books.
-export const GET_AUTHOR_DETAILS_QUERY = gql`
-  query GetAuthorDetails($authorId: ID!) {
-    author(id: $authorId) {
-      id
-      name
-      books { # Nested field: get all books by this author
-        id
-        title
-      }
-    }
-  }
-`;
+
 
 // Define interfaces for type safety, matching our GraphQL schema.
 interface AuthorDetailsData {
   author: {
     id: string;
     name: string;
+    bio?: string; // Add bio
     books: {
       id: string;
       title: string;
+      synopsis?: string; // Add synopsis
     }[];
-  } | null; // Author can be null if not found
+  } | null;// Author can be null if not found
 }
 
 interface AuthorDetailsProps {
@@ -41,7 +32,7 @@ interface AuthorDetailsProps {
 
 export function AuthorDetails({ authorId }: AuthorDetailsProps) {
   // Use useQuery hook, passing the authorId as a variable.
-  const { loading, error, data } = useQuery<AuthorDetailsData>(GET_AUTHOR_DETAILS_QUERY, {
+  const { loading, error, data } = useQuery<AuthorDetailsData>(GET_AUTHOR_DETAILS_BY_ID, {
     variables: { authorId }, // Pass the dynamic authorId to the query
   });
 
@@ -58,6 +49,12 @@ export function AuthorDetails({ authorId }: AuthorDetailsProps) {
       <h2 className="text-3xl font-bold mb-4 text-gray-800">{author.name}</h2>
       <p className="text-gray-600 mb-4">ID: {author.id}</p>
 
+      {author.bio && (
+        <p className="text-gray-700 mb-4 border-l-4 border-blue-400 pl-3 italic">
+          <strong className="not-italic">Bio:</strong> {author.bio}
+        </p>
+      )}
+
       <h3 className="text-xl font-semibold mb-3 text-gray-700">Books by {author.name}:</h3>
       {author.books.length === 0 ? (
         <p className="text-gray-600 italic">No books found for this author.</p>
@@ -69,6 +66,11 @@ export function AuthorDetails({ authorId }: AuthorDetailsProps) {
               <Link href={`/books/${book.id}`} className="hover:underline text-blue-600">
                 {book.title}
               </Link>
+              {book.synopsis && (
+                <p className="text-sm text-gray-500 ml-4 line-clamp-2">
+                  <strong className="font-medium">Synopsis:</strong> {book.synopsis}
+                </p>
+              )}
             </li>
           ))}
         </ul>

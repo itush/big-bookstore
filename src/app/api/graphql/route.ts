@@ -8,7 +8,7 @@ import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateNextHandler } from '@as-integrations/next'; // The integration library
 
 import { typeDefs } from '@/graphql/schema';
-import { resolvers } from '@/graphql/resolvers';
+import { resolvers } from '@/graphql/resolvers'; // barrel import 
 import dbConnect from '@/lib/mongoose';
 
 // Define the type for the expected context object for static App Router API routes.

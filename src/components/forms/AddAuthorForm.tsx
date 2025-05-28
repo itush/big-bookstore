@@ -7,38 +7,21 @@
 
 'use client';
 
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { useState } from 'react';
+import { GET_AUTHORS_WITH_BOOKS, ADD_AUTHOR_MUTATION } from '@/graphql/operations';
 
-// Define the GraphQL mutation for adding an author.
-// We expect the 'name' of the author as an argument and want the 'id' and 'name' back.
-const ADD_AUTHOR_MUTATION = gql`
-  mutation AddAuthor($name: String!) {
-    addAuthor(name: $name) {
-      id
-      name
-    }
-  }
-`;
 
-// It's good practice to also define the query we want to refetch after a mutation
-// so the UI updates automatically. This must match the exact query used in AuthorList.
-const GET_AUTHORS_QUERY_FOR_REFETCH = gql`
-  query GetAuthors {
-    authors {
-      id
-      name
-    }
-  }
-`;
+
 
 export function AddAuthorForm() {
   const [authorName, setAuthorName] = useState('');
+  const [authorBio, setAuthorBio] = useState('');
 
   // useMutation hook. 'refetchQueries' tells Apollo to re-run specific queries
   // after the mutation, ensuring the UI (e.g., AuthorList) is up-to-date with the new data.
   const [addAuthor, { loading, error }] = useMutation(ADD_AUTHOR_MUTATION, {
-    refetchQueries: [{ query: GET_AUTHORS_QUERY_FOR_REFETCH }],
+    refetchQueries: [{ query: GET_AUTHORS_WITH_BOOKS }],
   });
 
   // Purpose: Handles form submission.
@@ -48,8 +31,9 @@ export function AddAuthorForm() {
 
     try {
       await addAuthor({
-        variables: { name: authorName }, // Pass the author name as a variable to the mutation
+        variables: { input: { name: authorName, bio: authorBio } }, // Pass the author name as a variable to the mutation
       });
+      setAuthorBio('');
       setAuthorName(''); // Clear the input field on success
       console.log('Author added successfully!'); // For debugging
     } catch (err) {
@@ -75,6 +59,19 @@ export function AddAuthorForm() {
             disabled={loading} // Disable input while loading
             required // HTML5 validation for required field
           />
+        </div>
+        <div>
+          <label htmlFor="authorBio" className="block text-gray-700 text-sm font-bold mb-2">
+            Author Bio (Optional):
+          </label>
+          <textarea
+            id="authorBio"
+            value={authorBio}
+            onChange={(e) => setAuthorBio(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            rows={4} // Multi-line input
+            disabled={loading}
+          ></textarea>
         </div>
         <button
           type="submit"

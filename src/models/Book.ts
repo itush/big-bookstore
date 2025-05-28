@@ -11,7 +11,9 @@ import { IAuthor } from './Author'; // Import the Author interface for type hint
 export interface IBook extends Document {
   _id: mongoose.Types.ObjectId;
   title: string;
+  synopsis?: string;
   author: mongoose.Types.ObjectId | IAuthor; // Can be ObjectId (ref) or populated IAuthor object
+
 }
 
 // 2. Define the Mongoose Schema for the Book.
@@ -23,6 +25,7 @@ const BookSchema: Schema = new Schema({
     trim: true,
     minlength: [1, 'Book title must not be empty.'],
   },
+  synopsis: { type: String, required: false },
   author: {
     type: Schema.Types.ObjectId,
     ref: 'Author',
