@@ -77,7 +77,11 @@ export function BookList() {
       <ul className="space-y-3">
         {data?.books.map((book) => (
           <li key={book.id} className="border-b border-gray-200 pb-2 last:border-b-0">
-            <span className="font-semibold text-gray-700">{book.title}</span> by{' '}
+            <span className="font-semibold text-gray-700">
+              <Link href={`/books/${book.id}`} className="font-semibold text-gray-700 hover:underline">
+                 {book.title}
+              </Link>
+              </span> by{' '}
             {/* Link to the author's detail page */}
             {book.author ? (
               <Link href={`/authors/${book.author.id}`} className="italic text-blue-600 hover:underline">

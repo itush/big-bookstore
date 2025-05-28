@@ -14,6 +14,7 @@ export const metadata = {
   description: 'View details and books by a specific author.',
 };
 
+// Promise-based function component for nextjs new syntax
 export default async function AuthorDetailPage({ params }: { params: Promise<{ authorId: string }> }) {
  // Await the params object before destructuring its properties.
   // This addresses the Next.js warning.
