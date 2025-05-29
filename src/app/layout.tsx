@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ApolloProvider } from "@/components/providers/ApolloProvider";
 import { Header } from "@/components/common/Header";
+import Footer from "@/components/common/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
        <ApolloProvider>
         <Header />
           {children}
+        <Footer />
         </ApolloProvider>
       </body>
     </html>

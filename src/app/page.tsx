@@ -14,8 +14,7 @@ export default function Home() {
           Welcome to The Big Bookstore
         </h1>
         <p className="text-xl mb-8 leading-relaxed">
-          Your one-stop shop for exploring a vast collection of books and authors.
-          Discover new reads, dive into author biographies, or even add your own contributions!
+          This is a Nextjs, GraphQL, MongoDB project. You can add, browse, update, delete books and authors in this app.
         </p>
         <div className="space-x-4">
           <Link href="/books" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105">
