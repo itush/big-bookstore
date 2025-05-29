@@ -1,4 +1,4 @@
-That's an excellent and very insightful question! It's crucial to understand the "why" behind using a technology, not just the "how." Let's be honest and discuss how GraphQL specifically benefited our "Big Bookstore" project, and what would have been different (and potentially harder) if we had opted for a REST API instead.
+It's crucial to understand the "why" behind using a technology, not just the "how." Let's be honest and discuss how GraphQL specifically benefited our "Big Bookstore" project, and what would have been different (and potentially harder) if we had opted for a REST API instead.
 
 ### **How GraphQL Benefited Our Project: The "Why"**
 
